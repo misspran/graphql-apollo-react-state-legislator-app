@@ -1,4 +1,4 @@
-# Apollo React GraphQL test app. 
+# Apollo React GraphQL test app
 
 
 
