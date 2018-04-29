@@ -8,7 +8,7 @@ import Routes from './routes'
 const App = () => {
   return (
     <div>
-    	<h2>My first Apollo app 🚀</h2>
+    	<h2>State Legislators 🚀</h2>
       <StateLegislators/>
     
     </div>
