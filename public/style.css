@@ -19,3 +19,20 @@ form div {
   margin: 1em;
   display: inline-block;
 }
+
+.datamap-outer-conainer {
+  padding: 0;
+
+  #datamap-container {
+    position: relative;
+    margin: 0 auto;
+  }
+}
+
+path {
+  pointer-events: all;
+}
+path:hover {
+  opacity: 0.50;
+  cursor: pointer;
+}

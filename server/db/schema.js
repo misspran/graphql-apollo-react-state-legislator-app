@@ -9,29 +9,12 @@ const util = require('util')
 const toJs = require('xml2js').parseString
 const parseXML = util.promisify(require('xml2js').parseString)
 
-
-
-
-// const openData = fetch('https://www.opensecrets.org/api/?method=candContrib&cid=N00007360&cycle=2018&apikey=7373806f1f70c947ad5317f33987630f')
-// .then(response => {
-    
-
-    
-//     return response.text()
-
-// })
-// .then(parseXML)
-// .then((result) =>{
-//     console.log(result.response.contributors[0])
-// })
-
-// const legislatorData =  fetch(`http://www.opensecrets.org/api/?method=getLegislators&id=MA&apikey=7373806f1f70c947ad5317f33987630f`)
-// .then(response => response.text())
-// .then(parseXML)
-// .then((result) =>{
-//     console.log(result.response.legislator)
-// })
-
+const openData = fetch('https://www.opensecrets.org/api/?method=candContrib&cid=N00007360&cycle=2018&apikey=7373806f1f70c947ad5317f33987630f')
+.then(response => response.text())
+.then(parseXML)
+.then((result) =>{
+    console.log(result.response.contributors[0].$, result.response.contributors[0].contributor )
+})
 
 
 
@@ -45,22 +28,36 @@ type StateLegislators {
 }
 
 type Legislator {
-    cid: String
+    cid: String!
     firstlast: String
     party: String
     phone: String
     first_elected: String
-
+    
 
 
 }
+type OrgsForLegislator{
+ 
+    contributors: [Contributor] # the list of Contributors for legislator
 
+
+}
+type Contributor{
+    org_name: String
+    total: String
+    pacs: String
+    indivs:String
+
+}
 
  # the schema allows the following query:
 
 type Query {
 
-    legislatorsByState(state:String): [StateLegislators]
+    legislatorsByState(state:String): [StateLegislators],
+    legislatorByCID(state:String, cid:String): Legislator,
+    contributorsByCycle(cid:String, cycle:String): [OrgsForLegislator]
     
 
 
@@ -73,13 +70,31 @@ type Query {
 const resolvers = {
     Query: {
           legislatorsByState:   (obj, state) => fetch(`http://www.opensecrets.org/api/?method=getLegislators&id=${state.state}&apikey=7373806f1f70c947ad5317f33987630f`)
-.then(response => response.text())
-.then(parseXML)
-.then(result =>
-    result.response.legislator
-)
-.then(result => result.map(e => e.$))
-.then(result => result)
+                                                .then(response => response.text())
+                                                .then(parseXML)
+                                                .then(result =>
+                                                    result.response.legislator
+                                                )
+                                                .then(result => result.map(e => e.$))
+                                                .then(result => result),
+        legislatorByCID: (obj, args) => fetch(`http://www.opensecrets.org/api/?method=getLegislators&id=${args.state}&apikey=7373806f1f70c947ad5317f33987630f`)
+                                        .then(response => response.text())
+                                        .then(parseXML)
+                                        .then(result =>
+                                            result.response.legislator
+                                        )
+                                        .then(result => result.filter(e => e.$.cid ===args.cid))
+                                        .then(result => result.map(e=> e.$)[0])
+                                        .then(result => result),
+        
+        contributorsByCycle:(obj, args ) => fetch(`https://www.opensecrets.org/api/?method=candContrib&cid=${args.cid}&cycle=${args.cycle}&apikey=7373806f1f70c947ad5317f33987630f`)
+                                    .then(response => response.text())
+                                    .then(parseXML)
+                                    .then((result) =>
+                                        result.response.contributors[0].contributor.map(e=> e.$))
+                                    .then(result => result)
+                                    
+
 
 
 },
@@ -95,10 +110,28 @@ Legislator: {
     firstlast: (obj) => obj.firstlast,
     party: (obj) => obj.party,
     phone: (obj) => obj.phone,
-    first_elected: (obj) => obj.first_elected
+    first_elected: (obj) => obj.first_elected,
+    
 
 
 },
+
+OrgsForLegislator:{
+  
+    contributors: (obj) => [{org_name: obj.org_name, total: obj.total, pacs: obj.pacs, indivs:obj.indivs }]
+
+    
+
+},
+
+Contributor:{
+    org_name: obj => obj.org_name,
+       total: obj => obj.total,
+       pacs: obj => obj.pacs,
+       indivs: obj => obj.indivs
+
+
+}
 
 
 
@@ -124,9 +157,26 @@ module.exports = schema
 
 
 
+//BATTLE SCARS CODE
 
 
+    
 
+    
+//     return response.text()
+
+// })
+// .then(parseXML)
+// .then((result) =>{
+//     console.log(result.response.contributors[0])
+// })
+
+// const legislatorData =  fetch(`http://www.opensecrets.org/api/?method=getLegislators&id=MA&apikey=7373806f1f70c947ad5317f33987630f`)
+// .then(response => response.text())
+// .then(parseXML)
+// .then((result) =>{
+//     console.log(result.response.legislator)
+// })
 
 
 

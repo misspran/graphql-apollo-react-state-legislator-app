@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-
+import { BrowserRouter } from 'react-router-dom'
 import ApolloClient from "apollo-boost";
 import { ApolloProvider, Query } from "react-apollo";
-import gql from "graphql-tag";
+//import gql from "graphql-tag";
 
 import {Router} from 'react-router-dom'
 import history from './history'
@@ -35,10 +35,12 @@ const client = new ApolloClient({
 //   .then(result => console.log(result));
 
 ReactDOM.render(
+  
   <ApolloProvider client={client}>
     <Router history={history}>
       <App />
     </Router>
-  </ApolloProvider>,
+  </ApolloProvider>
+  ,
   document.getElementById('app')
 )
